@@ -1,0 +1,37 @@
+{
+  "neta": {
+    "magro": {
+      "label": "マグロ赤身",
+      "price": 250,
+      "bodyColor": "#f10707",
+      "dishColor": "#8c7e2f"
+    },
+    "kohada": {
+      "label": "こはだ",
+      "price": 220,
+      "bodyColor": "#7ca9b7",
+      "dishColor": "#9b0000"
+    },
+    "shake": {
+      "label": "サーモン",
+      "price": 200,
+      "bodyColor": "#ed6d0c",
+      "dishColor": "#0f085b"
+    }
+  },
+  "laneSushi": ["magro", "shake", "kohada", "shake", "magro", "magro", "kohada"],
+  "lane": {
+    "width": 500,
+    "height": 250,
+    "size": 60,
+    "time": 12
+  },
+  "sushiDish": {
+    "width": 60,
+    "height": 45
+  },
+  "sushiEater": {
+    "width": 150,
+    "height": 200
+  }
+} 

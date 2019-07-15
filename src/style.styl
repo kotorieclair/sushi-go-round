@@ -1,0 +1,411 @@
+$config = json('config.json', { hash: true, leave-strings: true })
+
+// リセット
+body
+div
+ul
+li
+  padding: 0
+  margin: 0
+
+// カウンター
+$counters = total total-bill
+// 各ネタ分をカウンターに用意
+for $neta in keys($config.neta)
+  push($counters, unquote($neta), unquote($neta + '-bill'))
+
+// カウンターセット
+body
+  counter-reset: unquote(join(' ', $counters))
+
+// 寿司食ったかチェッカー
+.checker
+  position: absolute
+  top: 0
+  left: 0
+  z-index: 1
+
+  for $neta, $data in $config.neta
+    &[data-neta=\'{$neta}\']:valid:checked
+      counter-increment: unquote($neta) 1 unquote($neta + '-bill') $data.price total 1 total-bill $data.price
+
+// 箱
+#box
+  display: flex
+  align-items: flex-start
+  justify-content: center
+  background-color: #fff
+  width: 100%
+  min-height: 100vh
+  position: relative
+  z-index: 2
+
+#sushi-round
+  position: relative
+
+// レーンのカーブ部分直径
+$lane-curve-diameter = unit($config.lane.height - $config.lane.size, 'px')
+// レーンの直線部分の長さ
+$lane-straight-px = unit($config.lane.width - $config.lane.size - $lane-curve-diameter, 'px')
+// レーンのカーブ部分の長さ
+$lane-curve-half-px = unit(round($lane-curve-diameter * 3.14 / 2, 2), 'px')
+// 全周の長さ
+$lane-whole-px = unit($lane-straight-px * 2 + $lane-curve-half-px * 2, 'px')
+// レーンカーブ部分の全周に対する割合
+$lane-curve-percent = unit(round($lane-curve-half-px / $lane-whole-px * 100, 2), '%')
+// レーン直線部分の全周に対する割合
+$lane-straight-percent = unit(round($lane-straight-px / $lane-whole-px * 100, 2), '%')
+
+// 寿司回すアニメーション
+@keyframes sushiGoRound
+  0%
+    transform: translate(0px, 0px) rotate(0deg)
+  {$lane-curve-percent}
+    transform: translate(0px, 0px) rotate(-180deg)  
+  {$lane-curve-percent + $lane-straight-percent}
+    transform: translate($lane-straight-px, 0px) rotate(-180deg)
+  {$lane-curve-percent + $lane-straight-percent + $lane-curve-percent}
+    transform: translate($lane-straight-px, 0px) rotate(-360deg)  
+  100%
+    transform: translate(0px, 0px) rotate(-360deg)
+
+// 寿司回しに対して寿司の表示を補正するアニメーション
+@keyframes sushiFixAngle
+  0%
+    transform: rotate(0deg)
+  {$lane-curve-percent}
+    transform: rotate(180deg)
+  {$lane-curve-percent + $lane-straight-percent}
+    transform: rotate(180deg)
+  {$lane-curve-percent + $lane-straight-percent + $lane-curve-percent}
+    transform: rotate(360deg)
+  100%
+    transform: rotate(360deg)
+
+// ページ上部からの余白
+$page-top-offset = 50px
+
+// 寿司レーン
+#lane
+  background-color: #f0c777
+  box-shadow: 0 0 11px 0 inset #b87742
+  height: unit($config.lane.height, 'px')
+  width: unit($config.lane.width, 'px')
+  border-radius: (@height / 2)
+  position: relative
+  margin-top: unit($config.sushiEater.height + $page-top-offset, 'px')
+
+  #lane-inner
+    background-color: #fff
+    box-shadow: 0 0 11px 0 #b87742
+    height: unit($config.lane.height - $config.lane.size * 2, 'px')
+    width: unit($config.lane.width - $config.lane.size * 2, 'px')
+    border-radius: (@height / 2)
+    position: absolute
+    transform: translate(unit($config.lane.size, 'px'), unit($config.lane.size, 'px'))
+
+// 回っている寿司本体
+.sushi
+  height: unit($config.sushiDish.height, 'px')
+  width: unit($config.sushiDish.width, 'px')
+  position: absolute
+  top: unit($config.lane.size / 2 - $config.sushiDish.height / 2, 'px')
+  left: unit(($config.lane.size / 2) + ($lane-curve-diameter / 2) - ($config.sushiDish.width / 2), 'px')
+  transform-origin: unit($config.sushiDish.width / 2, 'px') unit($lane-curve-diameter / 2 + $config.sushiDish.height / 2, 'px') 0
+  animation: sushiGoRound unit($config.lane.time, 's') infinite linear
+  
+  for $i in (1..length($config.laneSushi))
+    &[data-sushi-id=\'{$i}\']
+      animation-delay: unit(-($config.lane.time / length($config.laneSushi) * ($i - 1)), 's')
+
+// 寿司グラフィック担当
+.sushi-inner
+  height: unit($config.sushiDish.height, 'px')
+  width: unit($config.sushiDish.width, 'px')
+  position: relative
+
+  .sushi &
+    animation: sushiFixAngle unit($config.lane.time, 's') infinite linear
+
+    for $i in (1..length($config.laneSushi))
+      &[data-sushi-id=\'{$i}\']
+        animation-delay: unit(-($config.lane.time / length($config.laneSushi) * ($i - 1)), 's')
+
+// 寿司食うボタンのwrapper
+.sushi-btn-wrapper
+  height: 100%
+  width: 100%
+  position: absolute
+  left: 0
+  top: 0
+  z-index: 3
+
+// 寿司食うボタン
+.sushi-order-btn
+  height: 100%
+  width: 100%
+  position: absolute
+  left: 0
+  top: 0
+
+  &:hover {
+    cursor: grab
+  }
+
+// 寿司グラ
+.sushi-body
+  position: absolute
+  width: 70%
+  left: 15%
+  top: 10%
+  z-index: 2
+
+  for $neta, $data in $config.neta
+    unless $data.bodyImg
+      &[data-neta=\'{$neta}\']
+        background-color: unquote($data.bodyColor)
+        border-radius: 50%
+        height: 60%
+        width: 60%
+        left: 20%
+  
+  img
+    width: 100%
+
+// 寿司の皿
+.sushi-dish
+  width: 100%
+  position: absolute
+  bottom: 10%
+  left: 0
+  box-sizing: border-box
+  z-index: 1
+
+  for $neta, $data in $config.neta
+    unless $data.dishImg
+      &[data-neta=\'{$neta}\']
+        background-color: #fff
+        border: 7px solid unquote($data.dishColor)
+        border-radius: 50%
+        height: 70%
+
+  img
+    width: 100%
+
+// 寿司食ってる状態切り替えのtransition-duration
+$eating-transition-time = 0.1s
+// 寿司食ってる状態を保つ長さ
+$eating-animation-time = 1.5s
+// 上記を踏まえたうえでのkeyframesのタイミング
+$eating-switch-percent = unit($eating-transition-time / $eating-animation-time * 100, '%')
+
+// 寿司食うアニメーション
+@keyframes sushiEating
+  0%
+    opacity: 0
+  {$eating-switch-percent}
+    opacity: 1
+  {100% - $eating-switch-percent}
+    opacity: 1
+  100%
+    opacity: 0
+
+// 寿司食うアニメーション2
+@keyframes sushiEating2
+  0%
+    opacity: 0
+  {$eating-switch-percent}
+    opacity: 1
+  {100% - $eating-switch-percent}
+    opacity: 1
+  100%
+    opacity: 0
+
+// 寿司食う人
+#sushi-eater
+  width: unit($config.sushiEater.width, 'px')
+  height: unit($config.sushiEater.height, 'px')
+  position: absolute
+  top: $page-top-offset
+  left: 50%
+  transform: translateX(-50%)
+
+  .waiting
+  .eating
+  .done
+    width: 100%
+    height: 100%
+    position: absolute
+    top: 0
+    left: 0
+    text-align: center
+
+    img
+      width: 100%
+
+  unless $config.sushiEater.waitingImg
+    .waiting
+      display: flex
+      align-items: center
+      justify-content: center
+      background-color: #fff
+
+  unless $config.sushiEater.eatingImg
+    .eating
+      display: flex
+      align-items: center
+      justify-content: center
+      background-color: #fff
+
+  unless $config.sushiEater.doneImg
+    .done
+      display: flex
+      align-items: center
+      justify-content: center
+      background-color: #fff
+
+  .done
+    opacity: 1
+    transition: opacity $eating-transition-time linear ($eating-animation-time + 0.3s)
+  
+  .eating
+    opacity: 0
+
+  // まだ寿司が残っているときはdoneとeatingを出さない
+  .checker:not(:valid) ~ #box &
+    .done
+    .eating
+      opacity: 0
+  
+  // 寿司食ってる状態
+  for $i in (1..length($config.laneSushi))
+    // animation-name切り替えないとanimationしない
+    $animation-name = odd($i) ? sushiEating : sushiEating2
+    if $i != length($config.laneSushi)
+      .checker[data-order=\'{$i}\']:checked + .checker[data-order=\'{$i + 1}\']:not(:checked) ~ #box &
+        .eating
+          animation: $animation-name $eating-animation-time 1 linear both
+    else
+      .checker[data-order=\'{$i}\']:checked ~ #box &
+        .eating
+          animation: $animation-name $eating-animation-time 1 linear both !important
+
+// 寿司食った順番表示
+#order
+  width: unit($config.sushiDish.width, 'px')
+  height: unit($config.sushiDish.height, 'px')
+  position: absolute
+  top: $page-top-offset + $config.sushiEater.height - $config.sushiDish.height - 10px
+  left: s('calc(50% - %s)', unit($config.sushiEater.width / 2 + $config.sushiDish.width + 10px, 'px'))
+
+  // 皿を重ねて表示
+  .order-detail
+    display: none
+    width: 100%
+    height: 100%
+    position: absolute
+    left: 0
+
+    for $i in (1..length($config.laneSushi))
+      &[data-order=\'{$i}\']
+        bottom: 25% * ($i - 1)
+
+// 寿司の個数と値段
+#result
+  background-color: #f0c677
+  border: 5px solid #b87742
+  border-top-width: 0
+  border-left-width: 0
+  border-radius: 8px
+  padding: 10px
+  width: 300px
+  margin: 20px 0 0 20px
+
+#result-table
+  border-collapse: collapse
+  width: 100%
+
+  // 寿司グラ
+  .netaImg
+    text-align: center
+    vertical-align: middle
+    padding: 5px 10px
+    border-bottom: 1px solid #ac9654
+
+    .sushi-inner
+      margin: 0 auto
+    
+    .name
+      font-size: 12px
+
+  // 価格と食った個数
+  .price-num
+    text-align: right
+    vertical-align: middle
+    width: 30%
+    padding: 5px 10px
+    border-bottom: 1px solid #ac9654
+  
+  // 小計
+  .bill
+    font-weight: bold
+    width: 30%
+    padding: 5px 10px
+    border-bottom: 1px solid #ac9654
+
+  // 寿司ごとの個数と値段
+  for $neta, $data in $config.neta
+    tr[data-neta=\'{$neta}\']
+      .price::after
+        content: s("'%s'", $data.price)
+
+      .num::before
+        content: counter(unquote($neta))
+
+      .bill-num::after
+        content: counter(unquote($neta + '-bill'))
+  
+  // 合計
+  .total-header
+    text-align: center
+    padding: 10px 10px 5px
+
+  .total-num
+    text-align: right
+    padding: 10px 10px 5px
+
+    &::before
+      content: counter(total)
+  
+  .total-bill
+    font-weight: bold
+    padding: 10px 10px 5px
+
+    &::after
+      content: counter(total-bill)
+
+// 寿司食ったか処理
+for $i in (1..length($config.laneSushi))
+  // 寿司食うボタンの重なり順調整
+  .sushi-order-btn[data-order=\'{$i}\']
+    z-index: length($config.laneSushi) - $i
+
+  // 寿司の選択順保証その1：選択済みの順番ボタンは隠す
+  .checker[data-order=\'{$i}\']:valid
+    ~ #box #lane
+      .sushi-order-btn[data-order=\'{$i}\']
+        display: none
+
+  // 寿司の選択順保証その2：選択済みの寿司は隠す
+  .checker[data-sushi-id=\'{$i}\']:checked
+    ~ #box #lane
+      .sushi[data-sushi-id=\'{$i}\'] 
+        display: none
+
+  // 食った寿司の順番表示
+  .checker[data-order=\'{$i}\']
+    for $neta, $data in $config.neta
+      &[data-neta=\'{$neta}\']:valid:checked
+        ~ #box #order 
+          .order-detail[data-order=\'{$i}\'][data-neta=\'{$neta}\']
+            display: block

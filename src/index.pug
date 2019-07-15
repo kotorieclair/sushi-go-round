@@ -1,0 +1,113 @@
+doctype html
+html
+  head
+    meta(charset='UTF-8')
+    title Sushi-go-Round
+    link(rel='stylesheet' href='style.styl')
+  body
+    each neta, index in config.laneSushi
+      - var sushiId = index + 1
+      - var order = 0
+      while order < config.laneSushi.length
+        - order++
+        - var elemId = 'sushi-' + sushiId + '-' + order
+        input.checker(type='radio' required)&attributes({
+          id: elemId,
+          name: 'order-' + order,
+          'data-sushi-id': sushiId,
+          'data-neta': neta,
+          'data-order': order
+        })
+
+    #box
+      #sushi-round
+        #lane
+          #lane-inner
+          each neta, index in config.laneSushi
+            - var sushiId = index + 1
+            .sushi&attributes({
+              'data-sushi-id': sushiId,
+            })
+              .sushi-inner&attributes({
+                'data-sushi-id': sushiId,
+              })
+                .sushi-btn-wrapper
+                  - var order = 0
+                  while order < config.laneSushi.length
+                    - order++
+                    - var elemId = 'sushi-' + sushiId + '-' + order
+                    label.sushi-order-btn&attributes({
+                      for: elemId,
+                      'data-order': order
+                    })
+                .sushi-body&attributes({
+                  'data-neta': neta
+                })
+                  if config.neta[neta].bodyImg
+                    img(src=config.neta[neta].bodyImg)
+                .sushi-dish&attributes({
+                  'data-neta': neta
+                })
+                  if config.neta[neta].dishImg
+                    img(src=config.neta[neta].dishImg)
+
+        #sushi-eater
+          .waiting
+            if config.sushiEater.waitingImg
+              img(src=config.sushiEater.waitingImg)
+            else
+              span waiting for sushi
+          .done
+            if config.sushiEater.doneImg
+              img(src=config.sushiEater.doneImg)
+            else
+              span ate all sushi! yay!
+          .eating
+            if config.sushiEater.eatingImg
+              img(src=config.sushiEater.eatingImg)
+            else
+              span now eating...
+
+        #order
+          - var order = 0
+          while order < config.laneSushi.length
+            - order++
+            each data, neta in config.neta
+              div.order-detail&attributes({
+                'data-neta': neta,
+                'data-order': order
+              })
+                .sushi-dish&attributes({
+                  'data-neta': neta
+                })
+                  if data.dishImg
+                    img(src=data.dishImg)
+
+      #result
+        table#result-table
+          each data, neta in config.neta
+            tr&attributes({
+              'data-neta': neta
+            })
+              td.netaImg
+                .sushi-inner
+                  .sushi-body&attributes({
+                    'data-neta': neta
+                  })
+                    if data.bodyImg
+                      img(src=data.bodyImg)
+                  .sushi-dish&attributes({
+                    'data-neta': neta
+                  })
+                    if data.dishImg
+                      img(src=data.dishImg)
+                .name #{data.label}
+              td.price-num
+                .price ¥
+                .num 皿
+              td.bill
+                .bill-num ¥
+          tr.total
+            td.total-header 合計
+            td.total-num 皿
+            td.total-bill ¥

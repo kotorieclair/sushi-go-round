@@ -1,0 +1,20 @@
+{
+  "name": "sushi-go-round",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "parcel src/index.pug --open",
+    "build": "parcel build src/index.pug --no-source-maps --no-cache",
+    "prebuild": "rm -rf dist",
+    "prestart": "rm -rf .cache & rm -rf dist"
+  },
+  "author": "kotorieclair",
+  "license": "ISC",
+  "devDependencies": {
+    "parcel-bundler": "^1.12.3",
+    "pug": "^2.0.4",
+    "stylus": "^0.54.5"
+  }
+}
