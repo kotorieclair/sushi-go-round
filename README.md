@@ -22,9 +22,9 @@ yarn build
 
 HTMLは[Pug](https://pugjs.org/)、CSSは[Stylus](http://stylus-lang.com/)、ビルドには[Parcel](https://en.parceljs.org/)を使用しています。
 
-## config.json
+## `src/config.json`
 
-編集後は再起動してください。
+寿司などの設定ファイルです。編集後は再起動してください。
 
 ### `neta`
 ```
