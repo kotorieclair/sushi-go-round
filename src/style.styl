@@ -242,6 +242,17 @@ $eating-switch-percent = unit($eating-transition-time / $eating-animation-time *
 
     img
       width: 100%
+  
+  .waiting
+  .done
+    transition: opacity $eating-transition-time linear ($eating-animation-time + 0.3s)
+
+  .done
+    opacity: 1
+
+  .waiting
+  .eating
+    opacity: 0
 
   unless $config.sushiEater.waitingImg
     .waiting
@@ -264,18 +275,14 @@ $eating-switch-percent = unit($eating-transition-time / $eating-animation-time *
       justify-content: center
       background-color: #fff
 
-  .done
-    opacity: 1
-    transition: opacity $eating-transition-time linear ($eating-animation-time + 0.3s)
-  
-  .eating
-    opacity: 0
-
   // まだ寿司が残っているときはdoneとeatingを出さない
   .checker:not(:valid) ~ #box &
     .done
     .eating
       opacity: 0
+    
+    .waiting
+      opacity: 1
   
   // 寿司食ってる状態
   for $i in (1..length($config.laneSushi))
